@@ -8,7 +8,6 @@ const PORT = 8080; // default port 8080
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
 app.set('view engine', 'ejs'); // tells Express app to set EJS as templating view engine
 // EJS knows to check views directory for template files with ext .ejs
 // vars sent to EJS template must be inside object
