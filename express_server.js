@@ -1,10 +1,13 @@
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const bodyParser = require("body-parser");
 
-const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 
-const bodyParser = require("body-parser");
+app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
+
 
 app.set('view engine', 'ejs'); // tells Express app to set EJS as templating view engine
 // EJS knows to check views directory for template files with ext .ejs
@@ -20,10 +23,19 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
+// PAGE - Main URLs Index
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase };
+  const templateVars = { urls: urlDatabase, username: req.cookies["username"] };
   res.render("urls_index", templateVars);
 });
+
+// PAGE - Create New shortURL
+// should be defined before GET /urls/:id, otherwise Express will think 'new' is a route parameter
+app.get("/urls/new", (req, res) => {
+  const templateVars = { username: req.cookies["username"] };
+  res.render("urls_new", templateVars);
+});
+
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
@@ -32,11 +44,6 @@ app.post("/urls", (req, res) => {
   console.log(urlDatabase);
   // res.send("Ok");
   res.redirect(`/urls/${randShort}`);
-});
-
-// should be defined before GET /urls/:id, otherwise Express will think 'new' is a route parameter
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
 });
 
 // EDIT edit a longURL
@@ -58,9 +65,9 @@ app.post('/urls/:shortURL/delete', (req, res) => {
   res.redirect('/urls');
 });
 
-// READ
-app.get("/urls/:shortURL", (req, res) => { // ':' indicates 'shortURL' is a route parameter
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL] };
+// PAGE - Individual shortURL
+app.get("/urls/:shortURL", (req, res) => { // ':' indicates route parameter
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
   
   if (!urlDatabase.hasOwnProperty(req.params.shortURL)) {
     console.log(req.params.shortURL);
@@ -71,21 +78,37 @@ app.get("/urls/:shortURL", (req, res) => { // ':' indicates 'shortURL' is a rout
   }
 });
 
+
+// Login
+app.post("/login", (req, res) => {
+  // console.log('Cookies:', req.cookies); // cookies that have not been signed
+  // console.log('req.body:', req.body); // should be { username: <form input val> }
+
+  res.cookie('username', req.body.username);
+  res.redirect('/urls');
+});
+
+// Logout
+app.post("/logout", (req, res) => {
+  res.clearCookie('username'); // clear cookie specified by 'name'
+  res.redirect('/urls');
+});
+
+
+// Redirects to longURL
 app.get("/u/:shortURL", (req, res) => {
   const longURL = urlDatabase[req.params.shortURL];
   res.redirect(longURL);
 });
-
-
-
 app.get("/not_found", (req, res) => {
-  res.render("not_found");
+  const templateVars = { username: req.cookies["username"] };
+  res.render("not_found", templateVars);
 });
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 app.get("/hello", (req, res) => {
-  const templateVars = { greeting: 'Hello World!' };
+  const templateVars = { greeting: 'Hello World!', username: req.cookies["username"], };
   res.render("hello_world", templateVars);
 });
 
