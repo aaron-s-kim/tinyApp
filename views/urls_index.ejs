@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
   <title>TinyApp</title>
 </head>
+
 <body>
   <header>
     <%- include('partials/_header') %>
@@ -15,6 +16,7 @@
 
   <main style="margin: 1em;">
     <h3>My URLs</h3>
+    
     <table class="table">
       <thead>
         <tr>
@@ -28,7 +30,7 @@
         <% for(let url in urls) { %>
           <tr>
             <td><a href='/urls/<%= url %>'><%= url %></a></td>
-            <td><a href='<%= urls[url] %>'><%= urls[url] %></a></td>
+            <td><a href='<%= urls[url].longURL %>'><%= urls[url].longURL %></a></td>
             <td>
               <form class="form-inline" method="GET" action="/urls/<%= url %>">
                   <button type='submit' class="btn btn-outline-primary">Edit</button>

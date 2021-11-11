@@ -11,18 +11,17 @@
       </div>
       
       <div class="ml-auto">
-        <% if (!username) { %> <!-- if not logged in -->
+        <% if (!user) { %> <!-- if not logged in -->
           <a style='color: white; padding-right: 20px' href="/login">Login</a>
           <a style='color: white' href="/register">Register</a>
         <% } else { %> <!-- if logged in -->
           <form method="POST" action='/logout'>
-            <b><label for="username" style='padding-right: 20px'>Logged In As: <%= username.email %>!</label></b>
+            <b><label for="user" style='padding-right: 20px'>Logged In As: <%= user.email %>!</label></b>
             <button type='submit' class="btn btn-outline-dark" style="margin: 0.25em">Logout</button>
           </form>
         <% } %>
       </div>
 
     </div>
-
   </nav>
 </header>
