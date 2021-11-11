@@ -19,11 +19,9 @@
 
     <% if (!user) { %> <!-- if not logged in -->
       <p>Please log in or register first to view TinyURL</p>
-    <% } else { %> <!-- if logged in -->
-      <% if (!urlCreator) { %>
-        <p>This URL was not created by you.</p>
-      <% } %>
-
+    <% } else if (!urlCreator) { %> <!-- if logged in -->
+      <p>You do not have permission to view this.</p>
+    <% } else { %>
     <div class="card text-center">
 
       <div class="card-body">
@@ -40,7 +38,6 @@
         </form>
       </div>
     </div>
-
     <% } %>
 
   </main>
