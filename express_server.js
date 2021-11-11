@@ -27,6 +27,10 @@ const urlDatabase = {
   i3BoGr: {
     longURL: "https://www.google.ca",
     userID: "aJ48lW"
+  },
+  c7178e: {
+    longURL: 'https://www.wikipedia.org',
+    userID: 'l53k8d'
   }
 };
 
@@ -41,10 +45,14 @@ const users = {
     email: "user2@example.com",
     password: "dishwasher-funk"
   },
-  "user3RandomID": {
-    id: "user3RandomID",
+  "aJ48lW": {
+    id: "aJ48lW",
     email: "a@a.com",
     password: "1234"
+  },
+  'l53k8d': { id: 'l53k8d',
+    email: 'aa@aa.com',
+    password: '1234'
   }
 };
 
@@ -57,22 +65,22 @@ app.get("/", (req, res) => {
 
 // PAGE - Main URLs Index
 app.get("/urls", (req, res) => {
-  const templateVars = { urls: urlDatabase, user: users[req.cookies["user_id"]] };
+  const urlsForUserDB = urlsForUser(req.cookies["user_id"], urlDatabase);
+  
+  const templateVars = { urls: urlsForUserDB, user: users[req.cookies["user_id"]] };
   console.log('user:', templateVars.user);
   console.log('urlsDatabase:', templateVars.urls);
+
   res.render("urls_index", templateVars);
 });
 
-// PAGE - Create New shortURL; should be defined before GET /urls/:id
+// PAGE - Create TinyURL; should be defined before GET /urls/:id
 app.get("/urls/new", (req, res) => {
-  if (!users[req.cookies["user_id"]]) {
-    res.send('Only registered users can create new URLs');
-    return res.redirect('/urls');
-  }
   const templateVars = { user: users[req.cookies["user_id"]] };
   res.render("urls_new", templateVars);
 });
-// ADD a new shortURL: longURL
+
+// POST - Create TinyURL
 app.post("/urls", (req, res) => {
   if (!users[req.cookies["user_id"]]) {
     res.send('Only registered users can create new URLs');
@@ -101,18 +109,30 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-// PAGE - Individual shortURL
+// PAGE - shortURL
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const templateVars = {
-    shortURL,
-    longURL: urlDatabase[shortURL].longURL,
-    user: users[req.cookies["user_id"]],
-  };
 
-  if (!urlDatabase.hasOwnProperty(shortURL)) {
+  if (!urlDatabase[shortURL]) {
     res.redirect("/not_found");
   } else {
+    const urlsForUserDB = urlsForUser(req.cookies["user_id"], urlDatabase);
+    let urlCreator = true;
+
+    console.log(req.cookies["user_id"]);
+    console.log(urlDatabase[shortURL].userID);
+
+    if (req.cookies["user_id"] !== urlDatabase[shortURL].userID) {
+      urlCreator = false;
+    }
+
+    const templateVars = {
+      urlCreator,
+      shortURL,
+      longURL: urlDatabase[shortURL].longURL,
+      user: users[req.cookies["user_id"]],
+    };
+
     res.render("urls_show", templateVars);
   }
 });
@@ -162,13 +182,19 @@ app.post("/logout", (req, res) => {
 
 
 // REGISTRATION
-// PAGE - Register
+// PAGE - Register Account
 app.get("/register", (req, res) => {
-  const templateVars = { user: users[req.cookies["user_id"]] };
-  res.render("register", templateVars);
+  if (users[req.cookies["user_id"]]) {
+    console.log('You are already registered');
+    res.redirect('/urls');
+  } else {
+    const templateVars = { user: users[req.cookies["user_id"]] };
+    res.render("register", templateVars);
+  }
 });
-// POST - Register New: user, email, password
+// POST - Register Account: userid, email, password
 app.post("/register", (req, res) => {
+
   // console.log(req.body); // { email: 'asdf@gmail.com', password: '1234' }
   console.log(req.cookies); // { user_id: 'd7xepi' }
   const email = req.body.email;
@@ -197,11 +223,16 @@ app.post("/register", (req, res) => {
 });
 
 
+
 // REDIRECT to longURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const longURL = urlDatabase[shortURL].longURL;
-  res.redirect(longURL);
+  if (!urlDatabase[shortURL]) {
+    return res.send('short URL does not exist');
+  } else {
+    const longURL = urlDatabase[shortURL].longURL;
+    res.redirect(longURL);
+  }
 });
 app.get("/not_found", (req, res) => {
   const templateVars = { user: users[req.cookies["user_id"]] };
@@ -218,11 +249,25 @@ app.get("/hello", (req, res) => {
   res.render("hello_world", templateVars);
 });
 
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+// FUNCTIONS
 // returns a string of 6 random alphanumeric characters
 const generateRandomString = function() {
   return Math.random().toString(36).substr(2, 6);
+};
+// returns urls specific to userID
+const urlsForUser = function(id, DB) {
+  const urlsForUserDB = {};
+
+  for (let url in DB) {
+    if (id === DB[url].userID) {
+      urlsForUserDB[url] = DB[url];
+    }
+  }
+  // console.log(urlsForUserDB);
+  return urlsForUserDB;
 };

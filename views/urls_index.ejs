@@ -16,7 +16,11 @@
 
   <main style="margin: 1em;">
     <h3>My URLs</h3>
-    
+
+    <% if (!user) { %> <!-- if not logged in -->
+      <p>Please log in or register first to see URLs</p>
+    <% } else { %> <!-- if logged in -->
+
     <table class="table">
       <thead>
         <tr>
@@ -45,6 +49,8 @@
         <% } %>
       </tbody>
     </table>
+    <% } %>
+
   </main>
 
   <!-- Bootstrap JS -->

@@ -17,8 +17,15 @@
   <main style="margin: 1em;">
     <h3>TinyURL Info</h3>
 
+    <% if (!user) { %> <!-- if not logged in -->
+      <p>Please log in or register first to view TinyURL</p>
+    <% } else { %> <!-- if logged in -->
+      <% if (!urlCreator) { %>
+        <p>This URL was not created by you.</p>
+      <% } %>
+
     <div class="card text-center">
-      
+
       <div class="card-body">
         <h5 class="card-title">TinyURL for: <%= longURL %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
@@ -32,8 +39,10 @@
           <button type='submit' class="btn btn-primary">Submit</button>
         </form>
       </div>
-
     </div>
+
+    <% } %>
+
   </main>
 
   <!-- Bootstrap JS -->

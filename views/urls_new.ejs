@@ -17,6 +17,10 @@
   <main style="margin: 1em;">
     <h3>Create TinyURL</h3>
 
+    <% if (!user) { %> <!-- if not logged in -->
+      <p>Please log in or register first to create TinyURLs</p>
+    <% } else { %> <!-- if logged in -->
+
     <form class="form-inline" action="/urls" method="POST">
       <div class="form-group mb-2">
         <label for="longURL">Enter a URL:</label>
@@ -24,6 +28,8 @@
         <button type="submit" class="btn btn-primary">Submit</button>
       </div>
     </form>
+    
+    <% } %>
 
   </main>
 
