@@ -5,8 +5,8 @@ const bcrypt = require('bcryptjs');
 
 const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
-const userHelpers = require('./helpers/userHelpers');
-const { generateRandomString, urlsForUser, isCreator, emptyInput, findUserByEmail, validateLogin, validateReg } = userHelpers(userDB);
+const userHelpers = require('./helpers');
+const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, validateLogin, validateReg } = userHelpers(userDB);
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -113,7 +113,7 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
   const empty = emptyInput(email, password);
   if (empty) return res.status(400).send(empty); // 400 forbidden
-  const user = findUserByEmail(userDB, email);
+  const user = getUserByEmail(email, userDB);
   if (!user) return res.status(400).send('Email address not found.'); // 400 forbidden
 
   bcrypt.compare(password, user.password, (err, success) => {
@@ -151,7 +151,8 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
   const empty = emptyInput(email, password);
   if (empty) return res.status(400).send(empty); // 400 forbidden
-  const userEx = findUserByEmail(userDB, email);
+  
+  const userEx = getUserByEmail(email, userDB);
   if (userEx) return res.status(400).send('Email already exists.'); // 400 forbidden
 
   bcrypt.genSalt(10, (err, salt) => {
@@ -163,6 +164,8 @@ app.post("/register", (req, res) => {
     });
   });
 });
+
+
 
 
 // REDIRECT to longURL

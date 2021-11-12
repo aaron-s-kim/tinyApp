@@ -41,10 +41,6 @@ const userHelpers = (userDB) => {
         if (bcrypt.compareSync(password, userDB[user].hashedPassword)) {
           return { data: user, error: null };
         }
-        // if (password === userDB[user].password) {
-        //   passwordFound = true;
-        //   return { data: user, error: null };
-        // }
       }
     }
     if (!emailFound) {
@@ -55,10 +51,10 @@ const userHelpers = (userDB) => {
     }
   };
 
-  const findUserByEmail = function(userDB, email) {
+  const getUserByEmail = function(email, userDB) {
     for (let user in userDB) {
       if (email === userDB[user].email) {
-        return userDB[user];
+        return user;
       }
     }
   };
@@ -79,7 +75,7 @@ const userHelpers = (userDB) => {
     urlsForUser,
     isCreator,
     emptyInput,
-    findUserByEmail,
+    getUserByEmail,
     validateLogin,
     validateReg,
   };
