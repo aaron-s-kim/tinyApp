@@ -1,7 +1,8 @@
-const express = require("express");
-const cookieSession = require('cookie-session');
-const bodyParser = require("body-parser");
 const bcrypt = require('bcryptjs');
+const bodyParser = require("body-parser");
+const cookieSession = require('cookie-session');
+const express = require("express");
+// const method-override = require('');
 
 const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 // My URLs - urls_index
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
+  console.log('cookiesession:', userID);
   const urlsForUserDB = urlsForUser(userID, urlDB);
   const templateVars = { urls: urlsForUserDB, user: userDB[userID] };
   if (userID && !userDB[userID]) { // if userID exists, but userDB[userID] null
@@ -116,11 +118,12 @@ app.post("/login", (req, res) => {
   const user = getUserByEmail(email, userDB);
   if (!user) return res.status(400).send('Email address not found.'); // 400 forbidden
 
-  bcrypt.compare(password, user.password, (err, success) => {
+  bcrypt.compare(password, userDB[user].password, (err, success) => {
     if (!success) {
       return res.status(400).send('password does not match');
     }
-    req.session.userID = user.id; // set cookie
+    req.session.userID = user; // set cookie
+
     res.redirect("/urls");
   });
 
@@ -153,7 +156,7 @@ app.post("/register", (req, res) => {
   if (empty) return res.status(400).send(empty); // 400 forbidden
   
   const userEx = getUserByEmail(email, userDB);
-  if (userEx) return res.status(400).send('Email already exists.'); // 400 forbidden
+  if (userEx) return res.status(400).send('Email already registered.'); // 400 forbidden
 
   bcrypt.genSalt(10, (err, salt) => {
     bcrypt.hash(password, salt, (err, hash) => {

@@ -1,15 +1,19 @@
 const urlDatabase = {
   i3BoGr: {
     longURL: "https://www.google.ca",
-    userID: "vruho5"
+    userID: "tq9iit"
+  },
+  grs6cs: {
+    longURL: 'https://github.com/',
+    userID: 'tq9iit'
+  },
+  c7178e: {
+    longURL: 'https://www.wikipedia.org',
+    userID: 'tq9iit'
   },
   b6UTxQ: {
     longURL: "https://www.tsn.ca",
     userID: "vruho5"
-  },
-  c7178e: {
-    longURL: 'https://www.wikipedia.org',
-    userID: 'keg6ds'
   },
   n3qlz4: {
     longURL: 'https://www.youtube.com/',
