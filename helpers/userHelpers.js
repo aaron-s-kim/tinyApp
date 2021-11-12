@@ -25,8 +25,15 @@ const userHelpers = (userDB) => {
     return urlCreator;
   };
 
-  // authenticates user login
+  const emptyInput = function(email, password) {
+    if (!email) return { data: null, error: 'No email address entered' };
+    if (!password) return { data: null, error: 'No password entered' };
+  };
+
+  // authenticate EXISTING user
   const authenticateUser = function(userDB, email, password) {
+    if (emptyInput(email, password)) return emptyInput(email, password);
+
     let emailFound, passwordFound;
     for (let user in userDB) {
       if (email === userDB[user].email) {
@@ -45,11 +52,25 @@ const userHelpers = (userDB) => {
     }
   };
 
+  // register NEW user
+  const registerUser = function(userDB, email, password) {
+    if (emptyInput(email, password)) return emptyInput(email, password);
+
+    for (let user in userDB) {
+      if (email === userDB[user].email) {
+        return { error: 'Email address already exists.' };
+      }
+    }
+    return { error: null };
+  };
+
   return {
     generateRandomString,
     urlsForUser,
     isCreator,
-    authenticateUser
+    emptyInput,
+    authenticateUser,
+    registerUser,
   };
 };
 
