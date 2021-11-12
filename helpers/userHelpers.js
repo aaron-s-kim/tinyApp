@@ -26,16 +26,14 @@ const userHelpers = (userDB) => {
     }
     return urlCreator;
   };
-
+  
   const emptyInput = function(email, password) {
-    if (!email) return { data: null, error: 'No email address entered' };
-    if (!password) return { data: null, error: 'No password entered' };
+    if (!email) return 'No email address entered';
+    if (!password) return 'No password entered';
   };
 
   // validate user login
   const validateLogin = function(userDB, email, password) {
-    if (emptyInput(email, password)) return emptyInput(email, password);
-
     let emailFound, passwordFound;
     for (let user in userDB) {
       if (email === userDB[user].email) {
@@ -57,6 +55,14 @@ const userHelpers = (userDB) => {
     }
   };
 
+  const findUserByEmail = function(userDB, email) {
+    for (let user in userDB) {
+      if (email === userDB[user].email) {
+        return userDB[user];
+      }
+    }
+  };
+
   // validate user registration
   const validateReg = function(userDB, email, password) {
     if (emptyInput(email, password)) return emptyInput(email, password);
@@ -73,6 +79,7 @@ const userHelpers = (userDB) => {
     urlsForUser,
     isCreator,
     emptyInput,
+    findUserByEmail,
     validateLogin,
     validateReg,
   };

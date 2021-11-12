@@ -1,22 +1,18 @@
 const users = {
-  "userRandomID": {
-    id: "userRandomID",
-    email: "user@example.com",
-    password: "purple-monkey-dinosaur"
+  'vruho5': {
+    id: 'vruho5',
+    email: 'a@a.com',
+    password: '$2a$10$kFbPzhzrumsFBmY6NcERCeXloP6p13iCkqkgPfEwLBq8BfgvXT9zy'
   },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
+  'gl7kfv': {
+    id: 'gl7kfv',
+    email: 'asd@asd.com',
+    password: '$2a$10$NRqkCzSh7XkIxUnfVzgeZO1UyhJu/zFc7F4HEy6kv90XTC3uBGfK2'
   },
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "a@a.com",
-    password: "1234"
-  },
-  'l53k8d': { id: 'l53k8d',
-    email: 'aa@aa.com',
-    password: '1234'
+  'keg6ds': {
+    id: 'keg6ds',
+    email: 'asdf@asdf.com',
+    password: '$2a$10$keMn5sCPuQfYxB.YT0zhoOSq5XEpX4NErkpJIZGUr282LEXn.oOtq'
   }
 };
 
