@@ -6,7 +6,7 @@ const bcrypt = require('bcryptjs');
 const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
 const userHelpers = require('./helpers/userHelpers');
-const { generateRandomString, urlsForUser, isCreator, authenticateUser, registerUser } = userHelpers(userDB);
+const { generateRandomString, urlsForUser, isCreator, validateLogin, validateReg } = userHelpers(userDB);
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -94,7 +94,7 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
-// Login
+// LOGIN
 app.get("/login", (req, res) => {
   const userID = req.cookies["user_id"];
   if (userID) return res.redirect("/urls"); // redirect if already logged in
@@ -105,9 +105,10 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userID = req.cookies["user_id"];
   if (userID) return res.redirect("/urls"); // redirect if already logged in
+
   const email = req.body.email;
   const password = req.body.password;
-  const { data, error } = authenticateUser(userDB, email, password);
+  const { data, error } = validateLogin(userDB, email, password);
   if (error) return res.status(403).send(error); // 403 forbidden
   if (data) res.cookie("user_id", data); // create cookie
   res.redirect("/urls");
@@ -119,13 +120,15 @@ app.post("/logout", (req, res) => {
 });
 
 
-// Register
+
+// REGISTER
 app.get("/register", (req, res) => {
   const userID = req.cookies["user_id"];
   if (userDB[userID]) return res.redirect('/urls'); // redirect if already logged in
   const templateVars = { user: userDB[userID] };
   res.render("register", templateVars);
 });
+
 // Register - POST - Account: userid, email, password
 app.post("/register", (req, res) => {
   const userID = req.cookies["user_id"];
@@ -133,12 +136,14 @@ app.post("/register", (req, res) => {
 
   const email = req.body.email;
   const password = req.body.password;
-  const { error } = registerUser(userDB, email, password);
+  const { error } = validateReg(userDB, email, password);
   if (error) return res.status(400).send(error); // 400 bad request
+  
+  const hashedPassword = bcrypt.hashSync(password, 10);
 
-  // if userID exists, but null userDB, keep userID
+  // if userID exists but userDB null, keep userID
   let user = (userID && !userDB[userID]) ? userID : generateRandomString();
-  userDB[user] = { id: user, email, password }; // add new user to DB
+  userDB[user] = { id: user, email, hashedPassword }; // add new user to DB
   res.cookie('user_id', user); // create cookie
   res.redirect("/urls");
 });

@@ -1,3 +1,5 @@
+const bcrypt = require('bcryptjs');
+
 const userHelpers = (userDB) => {
 
   // returns a string of 6 random alphanumeric characters
@@ -30,18 +32,21 @@ const userHelpers = (userDB) => {
     if (!password) return { data: null, error: 'No password entered' };
   };
 
-  // authenticate EXISTING user
-  const authenticateUser = function(userDB, email, password) {
+  // validate user login
+  const validateLogin = function(userDB, email, password) {
     if (emptyInput(email, password)) return emptyInput(email, password);
 
     let emailFound, passwordFound;
     for (let user in userDB) {
       if (email === userDB[user].email) {
         emailFound = true;
-        if (password === userDB[user].password) {
-          passwordFound = true;
+        if (bcrypt.compareSync(password, userDB[user].hashedPassword)) {
           return { data: user, error: null };
         }
+        // if (password === userDB[user].password) {
+        //   passwordFound = true;
+        //   return { data: user, error: null };
+        // }
       }
     }
     if (!emailFound) {
@@ -52,10 +57,9 @@ const userHelpers = (userDB) => {
     }
   };
 
-  // register NEW user
-  const registerUser = function(userDB, email, password) {
+  // validate user registration
+  const validateReg = function(userDB, email, password) {
     if (emptyInput(email, password)) return emptyInput(email, password);
-
     for (let user in userDB) {
       if (email === userDB[user].email) {
         return { error: 'Email address already exists.' };
@@ -69,8 +73,8 @@ const userHelpers = (userDB) => {
     urlsForUser,
     isCreator,
     emptyInput,
-    authenticateUser,
-    registerUser,
+    validateLogin,
+    validateReg,
   };
 };
 
