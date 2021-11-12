@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 
 const userHelpers = (userDB) => {
 
-  // returns a string of 6 random alphanumeric characters
+  // returns string of 6 random alphanumeric characters
   const generateRandomString = function() {
     return Math.random().toString(36).substr(2, 6);
   };
@@ -32,25 +32,6 @@ const userHelpers = (userDB) => {
     if (!password) return 'No password entered';
   };
 
-  // validate user login
-  const validateLogin = function(userDB, email, password) {
-    let emailFound, passwordFound;
-    for (let user in userDB) {
-      if (email === userDB[user].email) {
-        emailFound = true;
-        if (bcrypt.compareSync(password, userDB[user].hashedPassword)) {
-          return { data: user, error: null };
-        }
-      }
-    }
-    if (!emailFound) {
-      return { data: null, error: 'Email address not found.' };
-    }
-    if (!passwordFound) {
-      return { data: null, error: 'Incorrect password' };
-    }
-  };
-
   const getUserByEmail = function(email, userDB) {
     for (let user in userDB) {
       if (email === userDB[user].email) {
@@ -59,17 +40,7 @@ const userHelpers = (userDB) => {
     }
   };
 
-  // validate user registration
-  const validateReg = function(userDB, email, password) {
-    if (emptyInput(email, password)) return emptyInput(email, password);
-    for (let user in userDB) {
-      if (email === userDB[user].email) {
-        return { error: 'Email address already exists.' };
-      }
-    }
-    return { error: null };
-  };
-
+  // adds 'https://' to url if not present
   const addHTTPS = function(url) {
     if (url.substring(0,8) !== "https://") {
       return ("https://").concat(url);
@@ -83,8 +54,6 @@ const userHelpers = (userDB) => {
     isCreator,
     emptyInput,
     getUserByEmail,
-    validateLogin,
-    validateReg,
     addHTTPS
   };
 };
