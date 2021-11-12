@@ -70,6 +70,13 @@ const userHelpers = (userDB) => {
     return { error: null };
   };
 
+  const addHTTPS = function(url) {
+    if (url.substring(0,8) !== "https://") {
+      return ("https://").concat(url);
+    }
+    return url;
+  };
+
   return {
     generateRandomString,
     urlsForUser,
@@ -78,6 +85,7 @@ const userHelpers = (userDB) => {
     getUserByEmail,
     validateLogin,
     validateReg,
+    addHTTPS
   };
 };
 

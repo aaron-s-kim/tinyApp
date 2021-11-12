@@ -7,21 +7,26 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+
+        <form id="newShortURL" method="GET" action="/urls/new">
+          <a style='padding-left: 20px' class="nav-item nav-link" href="#" onclick="this.parentNode.submit();">Create New Short Link</a>
+        </form>
+
+        <!-- <a class="nav-item nav-link" href="/urls/new">Create New Short Link</a> -->
       </div>
-      
       <div class="ml-auto">
-        <% if (!user) { %> <!-- if not logged in -->
+
+        <% if (!user) { %>
           <a style='color: white; padding-right: 20px' href="/login">Login</a>
           <a style='color: white' href="/register">Register</a>
-        <% } else { %> <!-- if logged in -->
+        <% } else { %>
           <form method="POST" action='/logout'>
             <b><label for="user" style='padding-right: 20px'>Logged In As: <%= user.email %>!</label></b>
             <button type='submit' class="btn btn-outline-dark" style="margin: 0.25em">Logout</button>
           </form>
         <% } %>
-      </div>
 
+      </div>
     </div>
   </nav>
 </header>

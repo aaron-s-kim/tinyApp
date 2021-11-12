@@ -15,18 +15,19 @@
   </header>
 
   <main style="margin: 1em;">
-    <h3>TinyURL Info</h3>
+    <h3>Short URL</h3>
 
-    <% if (!user) { %> <!-- if not logged in -->
+    <% if (!user) { %>
       <p>Please log in or register first to view TinyURL</p>
-    <% } else if (!urlCreator) { %> <!-- if logged in -->
-      <p>You do not have permission to view this.</p>
+    <% } else if (!urlCreator) { %>
+      <p>You do not have permission to view this page.</p>
     <% } else { %>
     <div class="card text-center">
 
       <div class="card-body">
-        <h5 class="card-title">TinyURL for: <%= longURL %></h5>
-        <p class="card-text">Short URL: <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text"><strong>Long URL:</strong> <%= longURL %></p>
+        <p class="card-text"><strong>Short URL:</strong> <a href="/u/<%= shortURL %>"><%= shortURL %></a></p>
+        <p class="card-text"><strong>Date Created:</strong> <em><%= date %></em></p>
       </div>
 
       <div class="card-footer text-muted">
@@ -34,7 +35,7 @@
         <form method="POST" action='/urls/<%= shortURL %>'>
           <label for="longURL">New URL:</label>
           <input type="text" name='longURL' placeholder="http://" style="width: 250px; margin: 1em" />
-          <button type='submit' class="btn btn-primary">Submit</button>
+          <button type='submit' class="btn btn-primary">Update</button>
         </form>
       </div>
     </div>

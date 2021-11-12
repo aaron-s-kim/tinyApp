@@ -7,7 +7,7 @@ const express = require("express");
 const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
 const userHelpers = require('./helpers');
-const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, validateLogin, validateReg } = userHelpers(userDB);
+const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, validateLogin, validateReg, addHTTPS } = userHelpers(userDB);
 
 const app = express();
 const PORT = 8080; // default port 8080
@@ -26,7 +26,10 @@ app.get("/", (req, res) => {
   res.send("Hello!");
 });
 
-// My URLs - urls_index
+
+// |    BROWSE    |
+
+// My URLs
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
   console.log('cookiesession:', userID);
@@ -39,59 +42,77 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-// Create TinyURL - ADD
-app.post("/urls", (req, res) => {
-  if (!userDB[req.session.userID]) {
-    return res.send('Only registered users can create new URLs');
-  }
-  const newShortURL = generateRandomString();
-  const longURL = req.body.longURL;
-  const userID = req.session.userID;
-  urlDB[newShortURL] = { longURL, userID };
-  console.log('New URL:', urlDB[newShortURL]);
-  res.redirect(`/urls/${newShortURL}`);
-});
-
-
-// Create TinyURL - urls_new - should be defined before GET /urls/:id
+// Create New Short Link
 app.get("/urls/new", (req, res) => {
+  if (!req.session.userID) {
+    return res.redirect("/login");
+  }
   const templateVars = { user: userDB[req.session.userID] };
   res.render("urls_new", templateVars);
 });
 
 
-// TinyURL Info - urls_show
+// | READ |
+
+// Short URL
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!urlDB[shortURL]) {
     return res.redirect("/not_found");
   }
-  const longURL = urlDB[shortURL].longURL;
   const userID = req.session.userID;
+  const longURL = urlDB[shortURL].longURL;
   const urlCreator = isCreator(userID, urlDB, shortURL);
-  const templateVars = { shortURL, longURL, urlCreator, user: userDB[userID] };
+  const date = urlDB[shortURL].date;
+  const templateVars = { shortURL, longURL, urlCreator, user: userDB[userID], date };
   res.render("urls_show", templateVars);
 });
 
-// My URLs - EDIT change longURL
+
+// | EDIT |
+
+// Short URL - update long URL
 app.post("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
   if (!urlCreator) {
-    return res.status(403).send("You do not have permission to modify this.");
+    return res.status(401).send("401 Unauthorized - You do not have permission to modify this");
   }
   const longURL = req.body.longURL;
+  if (!longURL) {
+    return res.status(400).send("400 Bad Request - URL cannot be empty");
+  }
   urlDB[shortURL].longURL = longURL;
   console.log('Long URL edited to:', longURL);
   res.redirect("/urls");
 });
 
-// My URLs - DELETE shortURL: longURL
+
+// |    ADD    |
+
+// Create New Short Link
+app.post("/urls", (req, res) => {
+  if (!userDB[req.session.userID]) {
+    return res.status(401).send('401 Unauthorized - Only registered users can create new URLs');
+  }
+  let longURL = req.body.longURL;
+  longURL = addHTTPS(longURL);
+  const newShortURL = generateRandomString();
+  const userID = req.session.userID;
+  const date = new Date().toDateString();
+  urlDB[newShortURL] = { longURL, userID, date };
+  console.log('New URL:', urlDB[newShortURL]);
+  res.redirect(`/urls/${newShortURL}`);
+});
+
+
+// | DELETE |
+
 app.post("/urls/:shortURL/delete", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
   if (!urlCreator) {
-    return res.status(403).send("You do not have permission to delete this.");
+    return res.status(401).send("401 Unauthorized - You do not have permission to delete this URL.");
   }
   console.log('Deleting:', urlDB[shortURL]);
   delete urlDB[shortURL];
@@ -99,13 +120,15 @@ app.post("/urls/:shortURL/delete", (req, res) => {
 });
 
 
-// LOGIN
+// ||    LOGIN    ||
+
 app.get("/login", (req, res) => {
   const userID = req.session.userID;
   if (userID) return res.redirect("/urls"); // redirect if already logged in
   const templateVars = { user: userDB[userID] };
   res.render("login", templateVars);
 });
+
 // Login - POST
 app.post("/login", (req, res) => {
   const userID = req.session.userID;
@@ -114,30 +137,30 @@ app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const empty = emptyInput(email, password);
-  if (empty) return res.status(400).send(empty); // 400 forbidden
+  if (empty) return res.status(400).send(empty);
+
   const user = getUserByEmail(email, userDB);
-  if (!user) return res.status(400).send('Email address not found.'); // 400 forbidden
+  if (!user) return res.status(400).send('Email address not found.');
 
   bcrypt.compare(password, userDB[user].password, (err, success) => {
     if (!success) {
-      return res.status(400).send('password does not match');
+      return res.status(400).send('Password does not match');
     }
-    req.session.userID = user; // set cookie
-
+    req.session.userID = user;
     res.redirect("/urls");
   });
 
 });
+
 // Logout - POST
 app.post("/logout", (req, res) => {
-  // res.clearCookie("user_id");
   req.session = null;
   res.redirect("/urls");
 });
 
 
+// |    REGISTER    |
 
-// REGISTER
 app.get("/register", (req, res) => {
   const userID = req.session.userID;
   if (userDB[userID]) return res.redirect('/urls'); // redirect if already logged in
@@ -145,10 +168,10 @@ app.get("/register", (req, res) => {
   res.render("register", templateVars);
 });
 
-// Register - POST - Account: userid, email, password
+// Register - POST
 app.post("/register", (req, res) => {
   const userID = req.session.userID;
-  if (userDB[userID]) return res.redirect('/urls'); // redirect if already logged in
+  if (userDB[userID]) return res.redirect('/urls');
 
   const email = req.body.email;
   const password = req.body.password;
@@ -170,21 +193,23 @@ app.post("/register", (req, res) => {
 
 
 
-
-// REDIRECT to longURL
+// Redirect to longURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   if (!urlDB[shortURL]) {
-    return res.status(404).send('short URL does not exist');
+    return res.redirect('/not_found');
   }
   const longURL = urlDB[shortURL].longURL;
   res.redirect(longURL);
 });
+
+// Not Found
 app.get("/not_found", (req, res) => {
   const userID = req.session.userID;
   const templateVars = { user: userDB[userID] };
   res.render("not_found", templateVars);
 });
+
 app.get("/urls.json", (req, res) => {
   res.json(urlDB);
 });
