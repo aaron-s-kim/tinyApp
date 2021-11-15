@@ -41,7 +41,6 @@ app.get("/", (req, res) => {
 // My URLs
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
-  console.log('userID:', userID);
   const urlsForUserDB = urlsForUser(userID, urlDB);
   const templateVars = { urls: urlsForUserDB, user: userDB[userID] };
   if (userID && !userDB[userID]) { // edge: if userID exists, but userDB[userID] null
@@ -73,11 +72,8 @@ app.get("/urls/:shortURL", (req, res) => {
   const longURL = urlDB[shortURL].longURL;
   const urlCreator = isCreator(userID, urlDB, shortURL);
   const date = urlDB[shortURL].date;
-
-
   const uniqueVisits = Object.keys(urlDB[shortURL].visitors).length;
   const totalVisits = totalVisitCount(urlDB, shortURL);
-
   const templateVars = { shortURL, longURL, urlCreator, user: userDB[userID], date, uniqueVisits, totalVisits, visitors: urlDB[shortURL].visitors };
   res.render("urls_show", templateVars);
 });
@@ -212,7 +208,6 @@ app.get("/u/:shortURL", (req, res) => {
   }
 
   let userID = req.session.userID;
-  console.log('userID (if existing):', userID);
   const date = new Date().toUTCString();
 
   if (!req.session.userID) {
