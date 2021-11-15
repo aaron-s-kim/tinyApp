@@ -6,9 +6,9 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 !["Screenshot of URLs page"](https://github.com/aaron-s-kim/tinyApp/blob/master/docs/urls-page.png)
 
-!["Screenshot of shortURL page"](https://github.com/aaron-s-kim/tinyApp/blob/master/docs/shortURL-page.png)
-
 !["Screenshot of register page"](https://github.com/aaron-s-kim/tinyApp/blob/master/docs/register-page.png)
+
+!["Screenshot of short URL page with visit counter"](https://github.com/aaron-s-kim/tinyApp/blob/master/docs/short-url-page.png)
 
 ## Dependencies
 
@@ -27,3 +27,4 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Additional Features
 - method-override to allow usage of PUT and DELETE
+- counter for unique and total visits

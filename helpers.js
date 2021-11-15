@@ -4,7 +4,11 @@ const userHelpers = (userDB) => {
 
   // returns string of 6 random alphanumeric characters
   const generateRandomString = function() {
-    return Math.random().toString(36).substr(2, 6);
+    let randStr = Math.random().toString(36).substr(2, 6);
+    if (userDB[randStr]) {
+      return generateRandomString();
+    }
+    return randStr;
   };
 
   // returns urls from urlDB specific to userID
@@ -48,13 +52,22 @@ const userHelpers = (userDB) => {
     return url;
   };
 
+  const totalVisitCount = function(urlDB, shortURL) {
+    let counter = 0;
+    for (v in urlDB[shortURL].visitors) {
+      counter += urlDB[shortURL].visitors[v].length
+    }
+    return counter;
+  }
+
   return {
     generateRandomString,
     urlsForUser,
     isCreator,
     emptyInput,
     getUserByEmail,
-    addHTTPS
+    addHTTPS,
+    totalVisitCount
   };
 };
 
