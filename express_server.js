@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const bodyParser = require("body-parser");
 const cookieSession = require('cookie-session');
 const express = require("express");
+const methodOverride = require('method-override')
 
 const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
@@ -19,6 +20,8 @@ app.use(cookieSession({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static('public'));
 app.set("view engine", "ejs");
+app.use(methodOverride('_method')) // override with POST having ?_method=DELETE
+
 
 
 
@@ -77,7 +80,7 @@ app.get("/urls/:shortURL", (req, res) => {
 // | EDIT |
 
 // Short URL - update long URL
-app.post("/urls/:shortURL", (req, res) => {
+app.put("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
   if (!urlCreator) {
@@ -111,7 +114,7 @@ app.post("/urls", (req, res) => {
 
 // | DELETE |
 
-app.post("/urls/:shortURL/delete", (req, res) => {
+app.delete("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
   const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
   if (!urlCreator) {

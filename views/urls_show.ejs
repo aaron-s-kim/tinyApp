@@ -32,7 +32,7 @@
 
       <div class="card-footer text-muted">
         <h2>Edit</h2>
-        <form method="POST" action='/urls/<%= shortURL %>'>
+        <form method="POST" action='/urls/<%= shortURL %>?_method=PUT'>
           <label for="longURL">New URL:</label>
           <input type="text" name='longURL' placeholder="http://" style="width: 250px; margin: 1em" />
           <button type='submit' class="btn btn-primary">Update</button>
