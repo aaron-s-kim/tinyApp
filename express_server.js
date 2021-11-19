@@ -106,10 +106,10 @@ app.post("/urls", (req, res) => {
     return res.status(401).send('401 Unauthorized - Only registered users can create new URLs');
   }
   let longURL = req.body.longURL;
-  longURL = addHTTPS(longURL);
-  const newShortURL = generateRandomString();
-  const date = new Date().toDateString();
-  urlDB[newShortURL] = { longURL, userID, date };
+  longURL = addHTTPS(longURL); // adds https:// if not present
+  const newShortURL = generateRandomString(); // creates new shortURL string
+  const date = new Date().toDateString(); 
+  urlDB[newShortURL] = { longURL, userID, date, visitors: {} }; // creates new shortURL obj
   res.redirect(`/urls/${newShortURL}`);
 });
 
@@ -203,14 +203,14 @@ app.post("/register", (req, res) => {
 // Redirect to longURL
 app.get("/u/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (!urlDB[shortURL]) {
+  if (!urlDB[shortURL]) { // if shortURL does not exist, redirect to not found
     return res.redirect('/not_found');
   }
 
   let userID = req.session.userID;
   const date = new Date().toUTCString();
 
-  if (!req.session.userID) {
+  if (!userID) { // if no userID found, create new string
     userID = generateRandomString();
     req.session.visitor = userID;
     urlDB[shortURL].visitors[userID] = [];
