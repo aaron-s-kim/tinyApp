@@ -1,18 +1,19 @@
 const bcrypt = require('bcryptjs');
 
-const userHelpers = (userDB) => {
+const userHelpers = (userDB, urlDB) => {
 
   // returns string of 6 random alphanumeric characters
+  // used for either userID or shortURL
   const generateRandomString = function() {
     let randStr = Math.random().toString(36).substr(2, 6);
-    if (userDB[randStr]) {
+    if (userDB[randStr] || urlDB[randStr]) { // if string exists in either DBs, call recursively;
       return generateRandomString();
     }
     return randStr;
   };
 
   // returns urls from urlDB specific to userID
-  const urlsForUser = function(id, urlDB) {
+  const urlsForUser = function(id) {
     const urlsForUserDB = {};
     for (let key in urlDB) {
       if (id === urlDB[key].userID) {
@@ -23,7 +24,7 @@ const userHelpers = (userDB) => {
   };
 
   // returns true if url creator, false, if not
-  const isCreator = function(cookie, urlDB, key) {
+  const isCreator = function(cookie, key) {
     let urlCreator = true;
     if (cookie !== urlDB[key].userID) {
       return urlCreator = false;
@@ -52,7 +53,7 @@ const userHelpers = (userDB) => {
     return url;
   };
 
-  const totalVisitCount = function(urlDB, shortURL) {
+  const totalVisitCount = function(shortURL) {
     let counter = 0;
     for (v in urlDB[shortURL].visitors) {
       counter += urlDB[shortURL].visitors[v].length

@@ -4,10 +4,11 @@ const cookieSession = require('cookie-session');
 const express = require("express");
 const methodOverride = require('method-override')
 
-const urlDB = require('./data/urlData');
 const userDB = require('./data/userData');
+const urlDB = require('./data/urlData');
 const userHelpers = require('./helpers');
-const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, addHTTPS, totalVisitCount } = userHelpers(userDB);
+// deconstructed for simplicity
+const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, addHTTPS, totalVisitCount } = userHelpers(userDB, urlDB);
 
 const app = express();
 const PORT = 8080;
@@ -41,7 +42,7 @@ app.get("/", (req, res) => {
 // My URLs
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
-  const urlsForUserDB = urlsForUser(userID, urlDB);
+  const urlsForUserDB = urlsForUser(userID);
   const templateVars = { urls: urlsForUserDB, user: userDB[userID] };
   if (userID && !userDB[userID]) { // edge: if userID exists, but userDB[userID] null
     return res.redirect("/register");
@@ -70,10 +71,10 @@ app.get("/urls/:shortURL", (req, res) => {
   }
   const userID = req.session.userID;
   const longURL = urlDB[shortURL].longURL;
-  const urlCreator = isCreator(userID, urlDB, shortURL);
+  const urlCreator = isCreator(userID, shortURL);
   const date = urlDB[shortURL].date;
   const uniqueVisits = Object.keys(urlDB[shortURL].visitors).length;
-  const totalVisits = totalVisitCount(urlDB, shortURL);
+  const totalVisits = totalVisitCount(shortURL);
   const templateVars = { shortURL, longURL, urlCreator, user: userDB[userID], date, uniqueVisits, totalVisits, visitors: urlDB[shortURL].visitors };
   res.render("urls_show", templateVars);
 });
@@ -84,7 +85,7 @@ app.get("/urls/:shortURL", (req, res) => {
 // Short URL - update long URL
 app.put("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
+  const urlCreator = isCreator(req.session.userID, shortURL);
   if (!urlCreator) {
     return res.status(401).send("401 Unauthorized - You do not have permission to modify this");
   }
@@ -118,7 +119,7 @@ app.post("/urls", (req, res) => {
 
 app.delete("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  const urlCreator = isCreator(req.session.userID, urlDB, shortURL);
+  const urlCreator = isCreator(req.session.userID, shortURL);
   if (!urlCreator) {
     return res.status(401).send("401 Unauthorized - You do not have permission to delete this URL.");
   }
@@ -210,13 +211,31 @@ app.get("/u/:shortURL", (req, res) => {
   let userID = req.session.userID;
   const date = new Date().toUTCString();
 
-  if (!userID) { // if no userID found, create new string
+  console.log('testing inside /u/:shortURL')
+  console.log(urlDB[shortURL].visitors) // empty
+
+  console.log('before creating newArr for existing user ')
+
+  if (userID) { // if existing userID, but no visit tracking, create new obj
+    if (!urlDB[shortURL].visitors[userID]) {
+      urlDB[shortURL].visitors[userID] = [];
+    }
+  }
+
+  console.log('after creating newArr for existing user ')
+  console.log(urlDB[shortURL].visitors) // => { userID: [] }
+
+  if (!userID) { // if no userID found, create new userID to track visits
     userID = generateRandomString();
     req.session.visitor = userID;
     urlDB[shortURL].visitors[userID] = [];
   }
-
+  
   urlDB[shortURL].visitors[userID].push(date);
+
+  console.log('after push(date)');
+  console.log(urlDB[shortURL].visitors) // => { b2kj6z: [ 'Sat, 20 Nov 2021 01:15:14 GMT' ] }
+
   const longURL = urlDB[shortURL].longURL;
   res.redirect(longURL);
 });
