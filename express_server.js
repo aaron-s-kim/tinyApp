@@ -7,6 +7,7 @@ const methodOverride = require('method-override')
 const userDB = require('./data/userData');
 const urlDB = require('./data/urlData');
 const userHelpers = require('./helpers');
+
 // deconstructed for simplicity
 const { generateRandomString, urlsForUser, isCreator, emptyInput, getUserByEmail, addHTTPS, totalVisitCount } = userHelpers(userDB, urlDB);
 
@@ -18,20 +19,19 @@ app.use(cookieSession({
   keys: ['key1', 'key2'], // secret keys
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }));
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(bodyParser.urlencoded({ extended: true })); // parses bodies from URL
+app.use(express.static('public')); // can serve static files from public dir
 app.set("view engine", "ejs");
 app.use(methodOverride('_method')) // override with POST having ?_method=DELETE
 
 
 
-
 // |    ROOT    |
-
 app.get("/", (req, res) => {
   const userID = req.session.userID;
-  if (!userID) return res.redirect("/login");
-  if (userID) return res.redirect('/urls');
+  console.log(userID);
+  if (!userID) return res.redirect("/login"); // if no userID found, redirect to login
+  if (userID) return res.redirect('/urls'); // if userID found, redirect to /urls
   const templateVars = { user: userDB[userID] };
   res.render('root', templateVars); // hidden page
 });
@@ -42,18 +42,18 @@ app.get("/", (req, res) => {
 // My URLs
 app.get("/urls", (req, res) => {
   const userID = req.session.userID;
-  const urlsForUserDB = urlsForUser(userID);
-  const templateVars = { urls: urlsForUserDB, user: userDB[userID] };
-  if (userID && !userDB[userID]) { // edge: if userID exists, but userDB[userID] null
+  if (userID && !userDB[userID]) { // edge: if userID found, non-existent in userDB, redirect to /register
     return res.redirect("/register");
   }
+  const urlsForUserDB = urlsForUser(userID); // only collect urls created by user
+  const templateVars = { urls: urlsForUserDB, user: userDB[userID] };
   res.render("urls_index", templateVars);
 });
 
 // Create New Short Link
 app.get("/urls/new", (req, res) => {
   const userID = req.session.userID;
-  if (!userID) {
+  if (!userID) { // if no userID, redirect to login
     return res.redirect("/login");
   }
   const templateVars = { user: userDB[userID] };
@@ -66,15 +66,15 @@ app.get("/urls/new", (req, res) => {
 // Short URL
 app.get("/urls/:shortURL", (req, res) => {
   const shortURL = req.params.shortURL;
-  if (!urlDB[shortURL]) {
+  if (!urlDB[shortURL]) { // if no shortURL found, redirect to not_found page
     return res.redirect("/not_found");
   }
   const userID = req.session.userID;
   const longURL = urlDB[shortURL].longURL;
-  const urlCreator = isCreator(userID, shortURL);
+  const urlCreator = isCreator(userID, shortURL); // checks if user is creator of shortURL
   const date = urlDB[shortURL].date;
-  const uniqueVisits = Object.keys(urlDB[shortURL].visitors).length;
-  const totalVisits = totalVisitCount(shortURL);
+  const uniqueVisits = Object.keys(urlDB[shortURL].visitors).length; // counts number of unique visits
+  const totalVisits = totalVisitCount(shortURL); // counts number of total visits
   const templateVars = { shortURL, longURL, urlCreator, user: userDB[userID], date, uniqueVisits, totalVisits, visitors: urlDB[shortURL].visitors };
   res.render("urls_show", templateVars);
 });
@@ -109,7 +109,7 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   longURL = addHTTPS(longURL); // adds https:// if not present
   const newShortURL = generateRandomString(); // creates new shortURL string
-  const date = new Date().toDateString(); 
+  const date = new Date().toDateString();  // marks datetime when shortURL createe
   urlDB[newShortURL] = { longURL, userID, date, visitors: {} }; // creates new shortURL obj
   res.redirect(`/urls/${newShortURL}`);
 });
@@ -132,13 +132,17 @@ app.delete("/urls/:shortURL", (req, res) => {
 
 app.get("/login", (req, res) => {
   const userID = req.session.userID;
-  if (userID) return res.redirect("/urls");
+  if (userID && !userDB[userID]) { // edge: if userID exists, but not found in userDB, remove cookie session
+    req.session = null;
+  }
+  if (userID && userDB[userID]) return res.redirect("/urls"); // if userID exists, redirect to /urls
   const templateVars = { user: userDB[userID] };
   res.render("login", templateVars);
 });
 
 // Login - POST
 app.post("/login", (req, res) => {
+
   const userID = req.session.userID;
   if (userID) return res.redirect("/urls");
 

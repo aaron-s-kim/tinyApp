@@ -32,6 +32,7 @@ const userHelpers = (userDB, urlDB) => {
     return urlCreator;
   };
   
+  // validation - error messages if email or password empty
   const emptyInput = function(email, password) {
     if (!email) return 'No email address entered';
     if (!password) return 'No password entered';
@@ -53,6 +54,7 @@ const userHelpers = (userDB, urlDB) => {
     return url;
   };
 
+  // counts total number of visits to page
   const totalVisitCount = function(shortURL) {
     let counter = 0;
     for (v in urlDB[shortURL].visitors) {
