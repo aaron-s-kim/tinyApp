@@ -29,7 +29,6 @@ app.use(methodOverride('_method')) // override with POST having ?_method=DELETE
 // |    ROOT    |
 app.get("/", (req, res) => {
   const userID = req.session.userID;
-  console.log(userID);
   if (!userID) return res.redirect("/login"); // if no userID found, redirect to login
   if (userID) return res.redirect('/urls'); // if userID found, redirect to /urls
   const templateVars = { user: userDB[userID] };
@@ -213,32 +212,19 @@ app.get("/u/:shortURL", (req, res) => {
   }
 
   let userID = req.session.userID;
-  const date = new Date().toUTCString();
-
-  console.log('testing inside /u/:shortURL')
-  console.log(urlDB[shortURL].visitors) // empty
-
-  console.log('before creating newArr for existing user ')
-
   if (userID) { // if existing userID, but no visit tracking, create new obj
     if (!urlDB[shortURL].visitors[userID]) {
       urlDB[shortURL].visitors[userID] = [];
     }
   }
-
-  console.log('after creating newArr for existing user ')
-  console.log(urlDB[shortURL].visitors) // => { userID: [] }
-
   if (!userID) { // if no userID found, create new userID to track visits
     userID = generateRandomString();
     req.session.visitor = userID;
     urlDB[shortURL].visitors[userID] = [];
   }
-  
-  urlDB[shortURL].visitors[userID].push(date);
 
-  console.log('after push(date)');
-  console.log(urlDB[shortURL].visitors) // => { b2kj6z: [ 'Sat, 20 Nov 2021 01:15:14 GMT' ] }
+  const date = new Date().toUTCString();
+  urlDB[shortURL].visitors[userID].push(date);
 
   const longURL = urlDB[shortURL].longURL;
   res.redirect(longURL);
